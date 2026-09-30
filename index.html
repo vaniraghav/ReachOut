@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReachOut Prototype V9.21</title>
+    <style>
+        /* Base Styling */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #ecf0f1; transition: background-color 0.5s; }
+        .app-container { max-width: 500px; margin: 0 auto; background: white; min-height: 100vh; display: flex; flex-direction: column; position: relative; } 
+        
+        /* Navigation (FIXED: z-index ensures navigation stays on top) */
+        nav { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: space-around; 
+            position: sticky; 
+            top: 0; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4); 
+            z-index: 100; 
+        }
+        nav span { cursor: pointer; font-weight: bold; }
+
+        /* Screens */
+        .screen { padding: 20px; display: none; flex: 1; }
+        .active { display: block; }
+        
+        /* Home Title Styling */
+        .home-title {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.8em;
+            font-weight: 800;
+            margin-bottom: 20px; 
+        }
+        .hand-motif { /* New motif class */
+            font-size: 1.2em;
+            color: #2ecc71; 
+            line-height: 1;
+        }
+
+        /* Post Styling */
+        .post-card { 
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .post-interaction-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .post-meta { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+
+        /* Container for avatar and content */
+        .post-content-container { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 10px; 
+            flex-grow: 1; 
+            cursor: pointer;
+            min-width: 0; 
+        }
+        
+        /* Avatar display style */
+        .avatar-display {
+            font-size: 18px; 
+            width: 30px; 
+            height: 30px; 
+            padding: 0; 
+            line-height: 30px; 
+            text-align: center; 
+            border-radius: 50%; 
+            background: #2c3e50; 
+            color: #fff; 
+            flex-shrink: 0; 
+        }
+        
+        /* Thread Reply Styles */
+        .reply-card { border-left: 3px solid #2ecc71; padding: 10px; margin-bottom: 10px; background: #f9f9f9; border-radius: 5px; }
+
+
+        /* Input Area & Buttons */
+        textarea, input[type="text"] { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box; 
+            resize: vertical; 
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        /* Safety Banner */
+        #safety-banner { 
+            background: #ffeaa7; 
+            color: #d63031; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            display: none; 
+            font-size: 0.9rem; 
+            border-left: 5px solid #d63031;
+        }
+        
+        /* Primary Button Style */
+        button { 
+            background: #2c3e50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 10px; 
+            transition: background 0.3s;
+        }
+        button:hover { background: #34495e; }
+
+        /* Accent Button for Reset */
+        .reset-button {
+            background: #e74c3c;
+            margin-top: 25px;
+        }
+        .reset-button:hover {
+            background: #c0392b;
+        }
+
+
+        /* Reply Button Style (Accent Color) */
+        .reply-button { 
+            background: #2ecc71; 
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .reply-button:hover { background: #27ae60; }
+
+        /* Floating Game Button */
+        #game-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #2c3e50; 
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-size: 1.5rem;
+        }
+        
+        /* Unseen Garden Styles */
+        .garden-container {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #2ecc71;
+            border-radius: 12px;
+            margin-top: 20px;
+            background: #f4fff4; 
+        }
+        /* Bigger Plant Display */
+        #plant-display {
+            font-size: 80px; 
+            margin: 30px 0; 
+            height: 100px; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            transition: font-size 0.5s ease-in-out;
+        }
+        .action-prompt {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #34495e;
+            font-weight: bold;
+        }
+        /* Alert/Error for Garden */
+        .garden-alert {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* Plant Selection & My Garden styles */
+        .plant-option {
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+        .plant-option:hover {
+            background: #e8e8e8;
+            border-color: #2ecc71;
+        }
+        .plant-emoji {
+            font-size: 2.5rem;
+        }
+        .plant-info h4 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .plant-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .my-garden-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 20px;
+        }
+
+        .bloomed-plant-card {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bloomed-plant-card .plant-emoji {
+            font-size: 3rem;
+        }
+        .bloomed-plant-card p {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 5px 0 0;
+        }
+
+        
+        /* 30-Day Challenge Styles */
+        .challenge-container {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e67e22; 
+            border-radius: 12px;
+            margin-top: 20px;
+            background: #fff8f0; 
+            cursor: pointer;
+        }
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+        .challenge-day {
+            background-color: #f7d5b8;
+            padding: 10px 5px;
+            font-size: 0.65rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            height: 80px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            transition: background-color 0.2s;
+            opacity: 1; /* Default opacity */
+        }
+        /* Style for the day that is currently completed (locked for the day) */
+        .challenge-day.completed-today {
+            background-color: #2ecc71;
+            color: white;
+            font-weight: bold;
+            pointer-events: none; /* Can't click again today */
+            opacity: 1;
+        }
+        /* Style for days completed on previous days (just marked off, can be clicked if daily lock is off) */
+        .challenge-day.completed {
+            background-color: #a8dadc; /* Lighter color for previous completion */
+            color: #2c3e50;
+        }
+
+        /* Style for locked days (when another task is already completed today) */
+        .challenge-day.daily-locked {
+            cursor: default;
+            opacity: 0.6; /* Slight dimming */
+            pointer-events: none; /* Disable click */
+        }
+
+
+        .day-number {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .challenge-day.completed-today .day-number {
+            color: white;
+        }
+        .challenge-day.completed .day-number {
+             color: #457b9d;
+        }
+        .challenge-day.daily-locked .day-number {
+             color: #999;
+        }
+
+        .day-task {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+
+
+        /* Aesthetic Card Styles (Spark Page) - UPDATED FOR IMAGE SIMULATION */
+        .aesthetic-card { 
+            position: relative;
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover; /* Important for "picture" effect */
+            background-position: center center;
+        }
+
+        /* Quote Text Styling (Overlay) - UPDATED FONT AND WORD WRAP */
+        .quote-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            /* Using a common script font to simulate cursive */
+            font-family: 'Brush Script MT', 'Lucida Handwriting', 'cursive';
+            background: rgba(0, 0, 0, 0.25); /* Less overlay for brighter images */
+        }
+        .quote-overlay p {
+            color: white;
+            font-size: 1.8rem; /* Bigger for the aesthetic look */
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2; /* Tighten line height */
+            margin: 0;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+            max-width: 90%; /* Crucial fix to prevent text running off frame */
+        }
+
+        /* --- SIMULATED IMAGE BACKGROUNDS --- */
+        /* 1. Forest/Mist */
+        .bg-retro1 { 
+            /* Using a dark gradient that looks misty/atmospheric */
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(44, 62, 80, 0.6)), url('https://picsum.photos/500/200?blur=1&random=1');
+            /* Fallback gradient if online images blocked */
+            background-color: #7f8c8d; 
+        }
+        /* 2. Sunset/Ocean */
+        .bg-retro2 { 
+            /* Using a soft pink/blue gradient that mimics a sunset */
+            background-image: linear-gradient(rgba(236, 240, 241, 0.3), rgba(255, 160, 120, 0.5)), url('https://picsum.photos/500/200?blur=1&random=2'); 
+            /* Fallback gradient if online images blocked */
+            background-color: #f1c40f; 
+        }
+        /* 3. Dandelion/Airy */
+        .bg-retro3 { 
+            /* Using a light, bright gradient for an airy feel */
+            background-image: linear-gradient(rgba(255,255,255,0.2), rgba(189, 195, 199, 0.5)), url('https://picsum.photos/500/200?blur=1&random=3');
+            /* Fallback gradient if online images blocked */
+            background-color: #bdc3c7; 
+        }
+
+        /* Profile Customization Styles (unchanged) */
+        .profile-section { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .profile-preview { 
+            width: 100px; height: 100px; border-radius: 50%; background: #ccc; margin: 10px auto; display: flex; justify-content: center; align-items: center; 
+            font-size: 50px;
+            border: 3px solid #2ecc71; 
+            overflow: hidden; position: relative;
+        }
+        .avatar-options { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+        .avatar { font-size: 30px; cursor: pointer; border: 2px solid transparent; padding: 5px; border-radius: 5px; transition: all 0.2s; }
+        .avatar.selected { border-color: #2ecc71; background: #e8ffee; }
+        
+        .color-palette { display: flex; gap: 10px; margin-top: 15px; }
+        .color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
+        .color-swatch.selected { border-color: #333; }
+
+        /* Future Letter Styles */
+        .letter-input-group { margin-bottom: 15px; }
+        .letter-input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+        .letter-history { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px; }
+        .letter-card { background: #f4f6f8; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        .letter-card.ready { border: 2px solid #e74c3c; background: #ffebeb; }
+        
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <nav>
+        <span class="hand-motif">🙌</span> 
+        <span onclick="showScreen('home')">Feed</span>
+        <span onclick="showScreen('post')">Post</span>
+        <span onclick="showScreen('profile')">Profile</span>
+        <span onclick="showScreen('positive')">Spark</span>
+    </nav>
+    
+    <div id="game-button" onclick="showScreen('sanctuary')">
+        <span style="color: #2ecc71;">🎮</span>
+    </div>
+
+
+    <div id="home" class="screen"> 
+        <div class="home-title">
+            <span class="hand-motif">🙌</span>
+            ReachOut
+        </div>
+        <div id="feed">
+            </div>
+    </div>
+
+    <div id="sanctuary" class="screen">
+        <h2>The Sanctuary</h2>
+        <p style="color: #555;">Welcome to the self-care hub. Grow your garden with positive thoughts.</p>
+        
+        <div class="garden-container" onclick="showScreen('garden')">
+            <h3>🌱 The Unseen Garden</h3>
+            <p>Click to nurture your current plant.</p>
+            <div style="font-size: 4rem;">🌳</div>
+        </div>
+
+        <div class="challenge-container" onclick="showScreen('challenge')">
+            <h3>💪 30 Days, New Me!</h3>
+            <p>Click to start the Self-Confidence Challenge.</p>
+            <div style="font-size: 4rem;">🗓️</div>
+        </div>
+        
+        <div class="challenge-container" onclick="showScreen('futureLetter')" style="border-color: #3498db; background: #eaf6ff;">
+            <h3>💌 Letter to Future Self</h3>
+            <p>Click to write and schedule your time capsule.</p>
+            <div style="font-size: 4rem;">🕰️</div>
+        </div>
+    </div>
+    
+    <div id="garden" class="screen">
+        <span onclick="showScreen('sanctuary')" style="cursor: pointer; color: #2ecc71; font-weight: bold;">&larr; Back to Sanctuary</span>
+        <hr>
+        <h2>Your Unseen Garden 🌳</h2>
+        
+        <div class="garden-container">
+            <h3 id="currentPlantTitle">Nurture Your Current Plant: [Plant Name]</h3>
+            
+            <div id="plant-display">
+                </div>
+            
+            <div class="action-prompt" id="garden-prompt">
+                </div>
+            
+            <input type="text" id="positiveActionInput" placeholder="E.g., I did three minutes of meditation today." />
+            <div id="gardenAlert" class="garden-alert">
+                Action must contain words suggesting positive effort or achievement!
+            </div>
+            
+            <button id="nurtureButton" onclick="waterPlant()">Nurture Plant</button>
+            <p style="margin-top: 15px; font-size: 0.9rem;">Current Growth: <span id="plant-progress-display">0 actions logged</span></p>
+        </div>
+
+        <div class="garden-container" onclick="showScreen('myGarden')" style="border-color: #34495e; background: #f6f8f9;">
+            <h3>🏡 My Bloomed Garden</h3>
+            <p>Click to view all your fully grown plants.</p>
+            <div style="font-size: 4rem;">🌻</div>
+        </div>
+
+    </div>
+
+    <div id="gardenSelect" class="screen">
+        <span onclick="showScreen('garden')" style="cursor: pointer; color: #2ecc71; font-weight: bold;">&larr; Back to Garden</span>
+        <hr>
+        <h2>Choose Your Next Plant 🌱</h2>
+        <p style="color: #555;">Which positive intention do you want to grow next?</p>
+
+        <div id="plantSelectionOptions">
+            </div>
+
+    </div>
+
+    <div id="myGarden" class="screen">
+        <span onclick="showScreen('garden')" style="cursor: pointer; color: #34495e; font-weight: bold;">&larr; Back to Garden</span>
+        <hr>
+        <h2>My Bloomed Garden 🌻</h2>
+        <p style="color: #555; text-align: center;">These are the symbols of your successful self-care efforts!</p>
+
+        <div id="bloomedGardenContainer" class="my-garden-grid">
+            </div>
+    </div>
+    
+    <div id="challenge" class="screen">
+        <span onclick="showScreen('sanctuary')" style="cursor: pointer; color: #e67e22; font-weight: bold;">&larr; Back to Sanctuary</span>
+        <hr>
+        <h2 id="challengeTitle">30 Day Self-Confidence Challenge</h2>
+        <p style="color: #555; text-align: center;">Click on one task per day once you've completed it!</p>
+        <p id="challengeStatus" style="color: #e74c3c; text-align: center; font-weight: bold; margin-bottom: 10px;"></p>
+
+        <div id="challengeGrid" class="challenge-grid">
+            </div>
+        <p id="challengeProgress" style="margin-top: 20px; text-align: center; font-weight: bold; color: #2c3e50;">Progress: 0/30 Days Completed</p>
+        
+        <button class="reset-button" onclick="resetChallenge()">Reset Challenge</button>
+
+    </div>
+
+    <div id="futureLetter" class="screen">
+        <span onclick="showScreen('sanctuary')" style="cursor: pointer; color: #3498db; font-weight: bold;">&larr; Back to Sanctuary</span>
+        <hr>
+        <h2>Write a Letter to Your Future Self</h2>
+
+        <div class="letter-input-group">
+            <label for="letterTitle">Letter Subject (Optional)</label>
+            <input type="text" id="letterTitle" placeholder="E.g., Where I am right now..." maxlength="50">
+        </div>
+
+        <div class="letter-input-group">
+            <label for="letterContent">Your Message:</label>
+            <textarea id="letterContent" placeholder="Dear Future Self, I hope you remember..." rows="6"></textarea>
+        </div>
+
+        <div class="letter-input-group">
+            <label for="revealTime">Reveal Time:</label>
+            <select id="revealTime">
+                <option value="30">1 Month (30 Days)</option>
+                <option value="90">3 Months (90 Days)</option>
+                <option value="150">5 Months (150 Days)</option>
+                <option value="365">1 Year (365 Days)</option>
+            </select>
+        </div>
+
+        <button onclick="scheduleLetter()">Schedule Letter</button>
+        
+        <div class="letter-history">
+            <h3>Scheduled Letters</h3>
+            <div id="scheduledLettersList">
+                <p style="color: #999;">No letters scheduled yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="post" class="screen">
+        <h2>Share Anonymously</h2>
+        <div id="safety-banner">
+            <strong>Need help?</strong> We detected some heavy words. Please reach out: <br>
+            <strong>Call/Text 988</strong> (Lifeline)
+        </div>
+        <textarea id="postText" placeholder="How are you feeling? Share honestly."></textarea>
+        <button onclick="addPost()">Share Anonymously</button>
+    </div>
+
+    <div id="thread" class="screen">
+        <span onclick="showScreen('home')" style="cursor: pointer; color: #2ecc71; font-weight: bold;">&larr; Back to Feed</span>
+        <hr>
+        <div id="originalPostContainer">
+            </div>
+        
+        <h3>Replies</h3>
+        <div id="repliesContainer">
+            </div>
+
+        <h3>Offer Support</h3>
+        <textarea id="replyText" placeholder="Offer comfort or advice..."></textarea>
+        <button onclick="submitReply()" class="reply-button">Submit Anonymous Reply</button>
+        <input type="hidden" id="currentPostId"> 
+    </div>
+
+    <div id="profile" class="screen">
+        <h2>My Anonymous Profile</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">This identity is for you only. Customize your look and feel.</p>
+
+        <div class="profile-section">
+            <h3>Avatar</h3>
+            <div id="profilePreview" class="profile-preview">
+                </div>
+            
+            <p style="text-align: center;">Choose your anonymous look:</p>
+            <div id="avatarOptions" class="avatar-options">
+                <span class="avatar" data-avatar="👤" onclick="setAvatar('👤')">👤</span>
+                <span class="avatar" data-avatar="👑" onclick="setAvatar('👑')">👑</span>
+                <span class="avatar" data-avatar="🤓" onclick="setAvatar('🤓')">🤓</span>
+                <span class="avatar" data-avatar="🎭" onclick="setAvatar('🎭')">🎭</span>
+                <span class="avatar" data-avatar="👽" onclick="setAvatar('👽')">👽</span>
+                <span class="avatar" data-avatar="🦋" onclick="setAvatar('🦋')">🦋</span>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3>App Wallpaper Color</h3>
+            <p>Select a background color for the app:</p>
+            <div id="colorPalette" class="color-palette">
+                <div class="color-swatch" style="background-color: #ecf0f1;" data-color="#ecf0f1" onclick="setWallpaperColor('#ecf0f1')"></div>
+                <div class="color-swatch" style="background-color: #e3f9e4;" data-color="#e3f9e4" onclick="setWallpaperColor('#e3f9e4')"></div>
+                <div class="color-swatch" style="background-color: #fff3e0;" data-color="#fff3e0" onclick="setWallpaperColor('#fff3e0')"></div>
+                <div class="color-swatch" style="background-color: #f6f6ff;" data-color="#f6f6ff" onclick="setWallpaperColor('#f6f6ff')"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="positive" class="screen">
+        <h2>Daily Spark ✨</h2>
+        <p style="text-align: center; color: #666;">Take a moment to breathe and reflect on something beautiful.</p>
+        
+        <div class="aesthetic-card bg-retro1">
+            <div class="quote-overlay">
+                <p>"The only way out is through."</p>
+            </div>
+        </div>
+
+        <div class="aesthetic-card bg-retro2">
+            <div class="quote-overlay">
+                <p>"Be gentle with yourself, you're doing the best you can."</p>
+            </div>
+        </div>
+        
+        <div class="aesthetic-card bg-retro3">
+            <div class="quote-overlay">
+                <p>"Progress, not perfection."</p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    // --- CONSTANTS ---
+    const MAX_PLANT_PROGRESS = 10; // Max actions to "bloom" a plant
+    const DEFAULT_COLOR = "#ecf0f1";
+    const DEFAULT_AVATAR = "👤";
+    const AVATAR_KEY = 'unseenFeedAvatar';
+    const COLOR_KEY = 'unseenFeedColor';
+    const PLANT_PROGRESS_KEY = 'unseenGardenProgress';
+    const CURRENT_PLANT_KEY = 'currentPlantType';
+    const BLOOMED_PLANTS_KEY = 'bloomedPlants';
+    const CHALLENGE_KEY = 'selfConfidenceChallenge';
+    const CHALLENGE_LOCK_KEY = 'challengeLastCompletionDate'; 
+    const CHALLENGE_TODAY_KEY = 'challengeCompletedToday'; // Stores the day number completed today
+    const LETTERS_KEY = 'futureSelfLetters'; 
+
+    // Plant configuration data
+    const PLANT_TYPES = [
+        { name: "Resilience Rose", emoji: "🌹", description: "Symbol of strength and self-love." },
+        { name: "Sunshine Sunflower", emoji: "🌻", description: "Grows towards the positive light." },
+        { name: "Calm Cactus", emoji: "🌵", description: "Thrives with minimal attention, reminding you to be resilient." },
+        { name: "Insight Ivy", emoji: "🌿", description: "Slow but steady growth in understanding." },
+        { name: "Motivation Maple", emoji: "🍁", description: "Represents transformation and growth." }
+    ];
+
+    // Plant stages for the current plant based on progress
+    const plantStages = [
+        '🌰', '🌱', '🌿', '🌳', '🌲' 
+    ];
+
+    // --- GAME & APP STATE ---
+    let plantProgress = parseInt(localStorage.getItem(PLANT_PROGRESS_KEY) || '0');
+    let currentPlantType = JSON.parse(localStorage.getItem(CURRENT_PLANT_KEY) || 'null');
+    let bloomedPlants = JSON.parse(localStorage.getItem(BLOOMED_PLANTS_KEY) || '[]');
+    let completedChallengeDays = JSON.parse(localStorage.getItem(CHALLENGE_KEY) || '[]');
+    let challengeLockDate = localStorage.getItem(CHALLENGE_LOCK_KEY);
+    let completedToday = localStorage.getItem(CHALLENGE_TODAY_KEY);
+    let futureLetters = JSON.parse(localStorage.getItem(LETTERS_KEY) || '[]');
+    
+    // Set a default plant if none is chosen
+    if (currentPlantType === null) {
+        currentPlantType = PLANT_TYPES[0];
+        localStorage.setItem(CURRENT_PLANT_KEY, JSON.stringify(currentPlantType));
+    }
+
+    // --- Post Data (unchanged) ---
+    let posts = [
+        {
+            id: 101,
+            content: "Feeling really stressed about exams, need a little positive energy today.",
+            time: "1:00 PM",
+            avatar: "👑", 
+            replies: [
+                { content: "Hang in there! You got this. Take a deep breath.", time: "1:05 PM", avatar: "🦋" },
+                { content: "Remember to take breaks. Your mental health is more important than a grade.", time: "1:15 PM", avatar: "🤓" }
+            ]
+        }
+    ];
+    let currentViewingPostId = null;
+
+    // --- UTILITIES (unchanged) ---
+    function getCurrentAvatar() {
+        return localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR;
+    }
+    function getTodayDateString() {
+        return new Date().toDateString();
+    }
+    
+    // --- PROFILE / SCREEN MANAGEMENT / POST LOGIC (mostly unchanged) ---
+    function loadCustomization() {
+        const savedAvatar = getCurrentAvatar();
+        const savedColor = localStorage.getItem(COLOR_KEY) || DEFAULT_COLOR;
+        
+        const profilePreviewElement = document.getElementById('profilePreview');
+        if (profilePreviewElement) profilePreviewElement.textContent = savedAvatar;
+
+        document.body.style.backgroundColor = savedColor;
+        highlightSelectedOptions(savedAvatar, savedColor);
+        
+        // Update App Title
+        document.title = "ReachOut Prototype V9.21";
+    }
+    
+    function setAvatar(avatar) {
+        localStorage.setItem(AVATAR_KEY, avatar);
+        const preview = document.getElementById('profilePreview');
+        if (preview) preview.textContent = avatar;
+        highlightSelectedOptions(avatar, localStorage.getItem(COLOR_KEY));
+    }
+
+    function setWallpaperColor(color) {
+        localStorage.setItem(COLOR_KEY, color);
+        document.body.style.backgroundColor = color;
+        highlightSelectedOptions(localStorage.getItem(AVATAR_KEY), color);
+    }
+
+    function highlightSelectedOptions(selectedAvatar, selectedColor) {
+        document.querySelectorAll('.avatar').forEach(s => {
+            s.classList.toggle('selected', s.dataset.avatar === selectedAvatar);
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.classList.toggle('selected', s.dataset.color === selectedColor);
+        });
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        
+        const screenToShow = document.getElementById(screenId);
+        if (screenToShow) {
+            screenToShow.classList.add('active');
+        }
+        if (screenId === 'home') renderFeed();
+        if (screenId === 'garden') renderPlant(); 
+        if (screenId === 'gardenSelect') renderPlantSelection();
+        if (screenId === 'myGarden') renderMyGarden(); 
+        if (screenId === 'challenge') renderChallenge();
+        if (screenId === 'futureLetter') renderLetters(); 
+        if (screenId === 'thread' && currentViewingPostId) {
+             const post = posts.find(p => p.id === currentViewingPostId);
+             if (post) openPostThread(post.id); 
+        }
+    }
+    
+    // --- POST SAFETY CHECK (FIXED LOGIC V2.0) ---
+    function checkSafety() {
+        const textElement = document.getElementById('postText');
+        const banner = document.getElementById('safety-banner');
+        
+        if (!textElement || !banner) return;
+
+        const normalizedText = textElement.value.toLowerCase();
+        
+        // Ensure no false positives by ONLY checking when there is content
+        if (normalizedText.trim().length === 0) {
+             banner.style.display = 'none';
+             return;
+        }
+
+        const keywords = [
+            "suicidal", "hopeless", "end my life", "kill myself", "sad", "die", "dying", 
+            "cant go on", "depressed", "useless", "worthless", "heavy", "pain" 
+        ];
+        
+        // Use includes() for simple, reliable check if any keyword is present
+        const hasKeyword = keywords.some(word => 
+            normalizedText.includes(word)
+        );
+        
+        // FIX: Display only if a keyword is positively detected.
+        if (banner) {
+             if (hasKeyword) {
+                 banner.style.display = 'block';
+             } else {
+                 banner.style.display = 'none';
+             }
+        }
+    }
+    // --- END OF FIX ---
+
+    function addPost() {
+        const text = document.getElementById('postText').value.trim();
+        if(!text) return;
+
+        const newPost = {
+            id: Date.now(),
+            content: text,
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            avatar: getCurrentAvatar(), 
+            replies: [] 
+        };
+
+        posts.unshift(newPost);
+        
+        document.getElementById('postText').value = '';
+        const banner = document.getElementById('safety-banner');
+        if (banner) banner.style.display = 'none'; // Ensure banner hides after posting
+        
+        showScreen('home'); 
+    }
+    
+    function renderFeed() {
+        const feed = document.getElementById('feed');
+        if (!feed) return; 
+
+        if (posts.length === 0) {
+            feed.innerHTML = '<p style="color: #999;">Start by posting your first thought!</p>';
+            return;
+        }
+        
+        feed.innerHTML = posts.map(p => {
+            
+            return `
+                <div class="post-card">
+                    <div class="post-meta">Anonymous • ${p.time} • ${p.replies.length} replies</div>
+                    
+                    <div class="post-interaction-container">
+                        <div class="post-content-container" onclick="openPostThread(${p.id})">
+                            <span class="avatar-display">${p.avatar}</span>
+                            <div>${p.content}</div>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function openPostThread(postId) {
+        currentViewingPostId = postId;
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+
+        const originalPostContainer = document.getElementById('originalPostContainer');
+        if (originalPostContainer) {
+            originalPostContainer.innerHTML = `
+                <div class="original-post">
+                    <div class="post-meta">Original Post • ${post.time}</div>
+                    <div class="post-content-container">
+                        <span class="avatar-display">${post.avatar}</span>
+                        <p>${post.content}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        renderReplies(post.replies); 
+
+        const currentPostIdInput = document.getElementById('currentPostId');
+        if (currentPostIdInput) currentPostIdInput.value = postId;
+
+        showScreen('thread');
+    }
+    
+    function renderReplies(replyArray) {
+        const repliesContainer = document.getElementById('repliesContainer');
+        if (!repliesContainer) return;
+
+        if (replyArray.length === 0) {
+            repliesContainer.innerHTML = '<p style="color: #999;">Be the first to offer support!</p>';
+            return;
+        }
+
+        repliesContainer.innerHTML = replyArray.map(r => `
+            <div class="reply-card">
+                <div class="post-meta">Anonymous Supporter • ${r.time}</div>
+                <div class="reply-content-container">
+                    <span class="avatar-display">${r.avatar}</span>
+                    <div>${r.content}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function submitReply() {
+        const replyText = document.getElementById('replyText');
+        const postIdInput = document.getElementById('currentPostId');
+
+        if (!replyText || !postIdInput) return;
+        const text = replyText.value.trim();
+        const postId = parseInt(postIdInput.value);
+
+        if(!text) return;
+
+        const postIndex = posts.findIndex(p => p.id === postId);
+        if (postIndex === -1) return;
+
+        const newReply = {
+            content: text,
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            avatar: getCurrentAvatar()
+        };
+        
+        posts[postIndex].replies.push(newReply);
+
+        renderReplies(posts[postIndex].replies);
+        
+        replyText.value = '';
+    }
+
+    
+    // --- UNSEEN GARDEN LOGIC (unchanged) ---
+    
+    const positiveKeywords = [
+        "did", "took", "finished", "started", "made", "walked", "meditate", 
+        "meditated", "breathing", "breathed", "helped", "achieved", "learned", 
+        "happy", "success", "calm", "safe", "rested", "ate"
+    ];
+
+    function getPlantEmoji(progress) {
+        // Map 0-10 progress to 5 stages
+        if (progress === MAX_PLANT_PROGRESS) return currentPlantType.emoji; // Use the final bloomed emoji
+        if (progress < 2) return plantStages[0];
+        if (progress < 4) return plantStages[1];
+        if (progress < 7) return plantStages[2];
+        if (progress < MAX_PLANT_PROGRESS) return plantStages[3];
+        return plantStages[4];
+    }
+    
+    function renderPlant() {
+        const display = document.getElementById('plant-display');
+        const progressDisplay = document.getElementById('plant-progress-display');
+        const inputField = document.getElementById('positiveActionInput');
+        const alertBox = document.getElementById('gardenAlert');
+        const title = document.getElementById('currentPlantTitle');
+        const prompt = document.getElementById('garden-prompt');
+        const button = document.getElementById('nurtureButton');
+
+        if (!display || !progressDisplay || !title || !prompt || !button) return;
+
+        title.textContent = `Nurture Your Current Plant: ${currentPlantType.name}`;
+        display.textContent = getPlantEmoji(plantProgress);
+        progressDisplay.textContent = `${plantProgress}/${MAX_PLANT_PROGRESS} actions logged`;
+
+        if (plantProgress >= MAX_PLANT_PROGRESS) {
+            // Plant is fully grown (bloomed)
+            prompt.textContent = `Congrats! Your ${currentPlantType.name} has bloomed! Choose a new plant to begin your next growth cycle.`;
+            inputField.style.display = 'none';
+            button.textContent = "Grow A New Plant";
+            button.onclick = () => showScreen('gardenSelect'); 
+        } else {
+            // Plant is still growing
+            prompt.textContent = "Log a positive action to water your plant:";
+            inputField.style.display = 'block';
+            button.textContent = "Nurture Plant";
+            button.onclick = waterPlant; 
+            
+            if (inputField) inputField.value = '';
+        }
+        
+        if (alertBox) alertBox.style.display = 'none';
+    }
+
+    function checkPositiveInput(text) {
+        const normalizedText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+        return positiveKeywords.some(word => 
+            new RegExp('\\b' + word + '\\b').test(normalizedText)
+        );
+    }
+
+    function waterPlant() {
+        const inputField = document.getElementById('positiveActionInput');
+        const alertBox = document.getElementById('gardenAlert');
+        const action = inputField.value.trim();
+
+        if (plantProgress >= MAX_PLANT_PROGRESS) {
+            // Should not happen if button is disabled, but as a guard
+            showScreen('gardenSelect');
+            return;
+        }
+
+        if (!action) {
+            alertBox.textContent = "Gotta type a positive action to water the plant! 🌱";
+            alertBox.style.display = 'block';
+            return; 
+        }
+
+        if (!checkPositiveInput(action)) {
+            alertBox.textContent = "Action must contain words suggesting positive effort or achievement! Try again.";
+            alertBox.style.display = 'block';
+            return;
+        }
+
+        alertBox.style.display = 'none';
+        plantProgress += 1;
+        localStorage.setItem(PLANT_PROGRESS_KEY, plantProgress.toString());
+
+        inputField.value = '';
+
+        if (plantProgress >= MAX_PLANT_PROGRESS) {
+            // Bloom the plant!
+            alert(`OMG! Your ${currentPlantType.name} has fully bloomed! 🤩 You crushed it!`);
+            // Add current plant to the bloomed list
+            bloomedPlants.push({ name: currentPlantType.name, emoji: currentPlantType.emoji, bloomedDate: getTodayDateString() });
+            localStorage.setItem(BLOOMED_PLANTS_KEY, JSON.stringify(bloomedPlants));
+        } else {
+             alert(`Action Logged: "${action}". Your plant is happier! 💧`);
+        }
+
+        renderPlant();
+    }
+
+    function renderPlantSelection() {
+        const optionsContainer = document.getElementById('plantSelectionOptions');
+        if (!optionsContainer) return;
+
+        optionsContainer.innerHTML = PLANT_TYPES.map(plant => `
+            <div class="plant-option" onclick="chooseNewPlant('${plant.name}')">
+                <span class="plant-emoji">${plant.emoji}</span>
+                <div class="plant-info">
+                    <h4>${plant.name}</h4>
+                    <p>${plant.description}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function chooseNewPlant(plantName) {
+        const newPlant = PLANT_TYPES.find(p => p.name === plantName);
+        if (!newPlant) return;
+
+        // Reset progress
+        plantProgress = 0;
+        localStorage.setItem(PLANT_PROGRESS_KEY, '0');
+        
+        // Set new current plant
+        currentPlantType = newPlant;
+        localStorage.setItem(CURRENT_PLANT_KEY, JSON.stringify(currentPlantType));
+
+        alert(`New Plant Selected: ${currentPlantType.name}! Start nurturing it now! 🌱`);
+        showScreen('garden');
+    }
+    
+    function renderMyGarden() {
+        const container = document.getElementById('bloomedGardenContainer');
+        if (!container) return;
+
+        bloomedPlants = JSON.parse(localStorage.getItem(BLOOMED_PLANTS_KEY) || '[]');
+
+        if (bloomedPlants.length === 0) {
+            container.innerHTML = '<p style="color: #999; width: 100%; text-align: center;">You haven\'t bloomed any plants yet. Keep growing! 💪</p>';
+            return;
+        }
+
+        container.innerHTML = bloomedPlants.map(plant => `
+            <div class="bloomed-plant-card">
+                <span class="plant-emoji">${plant.emoji}</span>
+                <p>${plant.name}</p>
+                <span style="font-size: 0.7rem; color: #777;">Bloomed: ${plant.bloomedDate}</span>
+            </div>
+        `).join('');
+    }
+
+    // --- 30-DAY CHALLENGE LOGIC (unchanged) ---
+    const challengeTasksRound1 = [
+        "Smile at a stranger.", "Do a workout you enjoy.", "List five things you love about yourself.", "Dance to your favorite song.", "Give someone a compliment.",
+        "Put on your favorite outfit.", "Declutter five items.", "Try something new with your hair.", 'Say this three times "I am powerful and confident!"', "Don't talk negatively about other people for the entire day.",
+        "Get at least eight hours of sleep.", "Learn something new.", "Do a little self-care.", "Do a social media detox.", "List three things you've accomplished.",
+        "Reach out to an old friend.", "Practice a power pose.", "Buy yourself a gift.", "Do something you've never done before.", "Set a goal, create an action plan, & accomplish one task today!",
+        "Prepare your favorite meal.", "Stretch.", "Write down five things you're grateful for.", "Do something you loved to do as a child.", "Go to the movies/a restaurant by yourself.",
+        "Create a vision board.", "Unfollow all social media accounts that make you feel less than amazing.", "Implement a new healthy habit.", "Say no to something.", "Talk to a stranger."
+    ];
+    
+    const challengeTasksRound2 = [
+        "Write a gratitude journal entry (3 items).", "Do a 10-minute mindful walk.", "Start learning a new skill.", "Cook a healthy meal from scratch.", "Call a family member to check in.",
+        "Read 10 pages of a non-fiction book.", "Create a positive affirmation chant.", "Spend 1 hour in nature (no phone).", "Forgive yourself for a past mistake.", "Plan out your entire week.",
+        "Try a 5-minute meditation.", "Fix something broken in your home.", "Donate an item to charity.", "Write a future goal and a reward for achieving it.", "Limit screen time after 9 PM.",
+        "Drink the recommended amount of water.", "Wake up 15 minutes earlier than usual.", "Tell someone 'I love you' (and mean it).", "Journal about your biggest fear.", "Identify and counter a negative thought pattern.",
+        "Take a different route on your commute.", "Listen to a motivational podcast.", "Complete a task you've been procrastinating.", "Send a thank-you note (digital or physical).", "Engage in a hobby for 30 minutes.",
+        "Take a long, relaxing bath/shower.", "Reflect on one lesson learned this week.", "Try to be present for the whole day.", "Do a financial check-up.", "Write down your personal definition of success."
+    ];
+
+    function getChallengeTasks() {
+        // Use Round 2 tasks if 30 or more days are completed, otherwise use Round 1
+        return completedChallengeDays.length >= 30 ? challengeTasksRound2 : challengeTasksRound1;
+    }
+
+    function getChallengeRound() {
+        return completedChallengeDays.length >= 30 ? 2 : 1;
+    }
+    
+    // Check if the daily lock date is the current date
+    function isDailyLocked(lockDate) {
+        return lockDate === getTodayDateString();
+    }
+
+    function renderChallenge() {
+        const grid = document.getElementById('challengeGrid');
+        const progressDisplay = document.getElementById('challengeProgress');
+        const statusDisplay = document.getElementById('challengeStatus');
+        const titleDisplay = document.getElementById('challengeTitle');
+
+        if (!grid || !progressDisplay || !statusDisplay || !titleDisplay) return;
+        
+        // Refresh state
+        completedChallengeDays = JSON.parse(localStorage.getItem(CHALLENGE_KEY) || '[]');
+        challengeLockDate = localStorage.getItem(CHALLENGE_LOCK_KEY);
+        let completedTodayDay = parseInt(localStorage.getItem(CHALLENGE_TODAY_KEY));
+        
+        // Clear completedToday if the lockDate is old
+        if (!isDailyLocked(challengeLockDate)) {
+             completedTodayDay = null;
+             localStorage.removeItem(CHALLENGE_TODAY_KEY);
+        }
+        
+        const tasks = getChallengeTasks();
+        const round = getChallengeRound();
+        const totalDaysCompletedInRound = completedChallengeDays.length % 30; // 0-29
+
+        titleDisplay.textContent = `30 Days, Round ${round}: ${round === 1 ? 'New Me!' : 'Next Level!'}`;
+
+        let challengeHTML = '';
+
+        if (totalDaysCompletedInRound === 0 && completedChallengeDays.length > 0) {
+            // The challenge is complete for this round (or just started Round 2 with 0/30)
+            if (round === 2) {
+                 statusDisplay.textContent = "🥳 Round 1 CRUSHED! Start Round 2 for new challenges!";
+            } else {
+                 statusDisplay.textContent = "🥳 YOU DID IT! Challenge Completed! Reset or continue to Round 2.";
+            }
+             statusDisplay.style.color = "#2c3e50";
+        } else if (completedTodayDay) {
+             statusDisplay.textContent = `✅ Task Day ${completedTodayDay} completed! Check back tomorrow.`;
+             statusDisplay.style.color = "#2ecc71";
+        } else {
+             statusDisplay.textContent = "Time to crush a task! Choose one for today.";
+             statusDisplay.style.color = "#2c3e50";
+        }
+        
+        // Render 30 tasks for the current round
+        for (let i = 0; i < 30; i++) {
+            const day = i + 1;
+            const globalDay = (round - 1) * 30 + day;
+            const task = tasks[i];
+            
+            // Check if this task (by global day number) has been completed
+            const isCompleted = completedChallengeDays.includes(globalDay);
+            const isCompletedToday = isCompleted && globalDay === parseInt(completedTodayDay);
+            
+            // Can only click if NOT completed already AND nothing has been completed today
+            const canClick = !isCompleted && !completedTodayDay;
+            
+            let extraClass = '';
+            if (isCompletedToday) {
+                extraClass = 'completed-today';
+            } else if (isCompleted) {
+                extraClass = 'completed';
+            } else if (completedTodayDay) {
+                extraClass = 'daily-locked'; // Lock non-completed tasks if one is done today
+            }
+
+            challengeHTML += `
+                <div 
+                    class="challenge-day ${extraClass}" 
+                    onclick="${canClick ? `toggleChallengeDay(${globalDay})` : ''}"
+                >
+                    <span class="day-number">Day ${day}</span>
+                    <span class="day-task">${task}</span>
+                    ${isCompletedToday ? '🎉' : (isCompleted ? '✅' : '')}
+                </div>
+            `;
+        }
+
+        grid.innerHTML = challengeHTML;
+        progressDisplay.textContent = `Progress: ${totalDaysCompletedInRound}/30 Days Completed in this round (${completedChallengeDays.length} total)`;
+        localStorage.setItem(CHALLENGE_KEY, JSON.stringify(completedChallengeDays)); 
+    }
+
+    function toggleChallengeDay(globalDay) {
+        const todayDate = getTodayDateString();
+        let completedTodayDay = localStorage.getItem(CHALLENGE_TODAY_KEY);
+
+        // 1. Check if an item was completed today, and this is a new click on a different item
+        if (completedTodayDay && parseInt(completedTodayDay) !== globalDay) {
+            
+            // If the previously selected day (completedTodayDay) is in the list of completed days, remove it.
+            const oldDayIndex = completedChallengeDays.indexOf(parseInt(completedTodayDay));
+            if (oldDayIndex > -1) {
+                completedChallengeDays.splice(oldDayIndex, 1);
+            }
+            
+            // Then, remove the lock for the old one
+            completedTodayDay = null;
+            localStorage.removeItem(CHALLENGE_TODAY_KEY);
+            
+            // The flow continues to select the new one (the current globalDay)
+        }
+
+        // 2. Process selection of the new globalDay
+        const index = completedChallengeDays.indexOf(globalDay);
+        
+        if (index > -1) {
+            // Un-selecting a completed day (should only happen if selecting a new task today)
+            // This is primarily handled in step 1, but this provides a fallback removal if needed.
+            completedChallengeDays.splice(index, 1);
+            localStorage.removeItem(CHALLENGE_TODAY_KEY);
+            localStorage.removeItem(CHALLENGE_LOCK_KEY);
+            alert("Task unselected.");
+        } else {
+            // Selecting a new task
+            if (completedTodayDay) {
+                 // Should be prevented by step 1 and the `canClick` logic in renderChallenge, but just in case.
+                 alert("You already completed a task today! You can only switch it out.");
+                 return;
+            }
+            
+            completedChallengeDays.push(globalDay);
+            
+            // Apply the daily lock
+            localStorage.setItem(CHALLENGE_TODAY_KEY, globalDay.toString());
+            localStorage.setItem(CHALLENGE_LOCK_KEY, todayDate);
+            
+            alert(`Task Day ${globalDay % 30 === 0 ? 30 : globalDay % 30} completed! You've locked in your self-care for today! 🎉`);
+        }
+        
+        localStorage.setItem(CHALLENGE_KEY, JSON.stringify(completedChallengeDays));
+        renderChallenge();
+    }
+    
+    function resetChallenge() {
+        if (confirm("Are you sure you want to reset your 30-Day Challenge progress? This will clear ALL completed days and start you back at Round 1, Day 1.")) {
+            completedChallengeDays = [];
+            localStorage.removeItem(CHALLENGE_KEY);
+            localStorage.removeItem(CHALLENGE_LOCK_KEY);
+            localStorage.removeItem(CHALLENGE_TODAY_KEY);
+            alert("Challenge successfully reset! Get ready for a fresh start! ✨");
+            renderChallenge();
+        }
+    }
+
+
+    // --- FUTURE LETTER LOGIC (unchanged) ---
+
+    function scheduleLetter() {
+        const title = document.getElementById('letterTitle').value.trim() || "Untitled Letter";
+        const content = document.getElementById('letterContent').value.trim();
+        const delayDays = parseInt(document.getElementById('revealTime').value);
+
+        if (!content) {
+            alert("You gotta write something in the letter first, obvi.");
+            return;
+        }
+
+        const revealDate = new Date();
+        revealDate.setDate(revealDate.getDate() + delayDays);
+
+        const newLetter = {
+            id: Date.now(),
+            title: title,
+            content: content,
+            scheduledDate: revealDate.toDateString(),
+            writtenDate: getTodayDateString(),
+            status: 'scheduled'
+        };
+
+        futureLetters.push(newLetter);
+        localStorage.setItem(LETTERS_KEY, JSON.stringify(futureLetters));
+
+        document.getElementById('letterTitle').value = '';
+        document.getElementById('letterContent').value = '';
+
+        alert(`Letter scheduled! It will be ready on: ${newLetter.scheduledDate} 💌`);
+
+        renderLetters();
+    }
+
+    function renderLetters() {
+        const listContainer = document.getElementById('scheduledLettersList');
+        if (!listContainer) return;
+        
+        futureLetters = JSON.parse(localStorage.getItem(LETTERS_KEY) || '[]');
+        const today = new Date();
+
+        if (futureLetters.length === 0) {
+            listContainer.innerHTML = '<p style="color: #999;">No letters scheduled yet.</p>';
+            return;
+        }
+        
+        futureLetters.forEach(letter => {
+            const scheduled = new Date(letter.scheduledDate);
+            const isReady = scheduled <= today && letter.status !== 'read';
+            
+            if (isReady && letter.status !== 'ready') {
+                letter.status = 'ready';
+            }
+        });
+        localStorage.setItem(LETTERS_KEY, JSON.stringify(futureLetters));
+
+
+        listContainer.innerHTML = futureLetters.map(letter => {
+            const isReady = letter.status === 'ready';
+
+            const statusText = isReady ? 
+                `<span style="color: #e74c3c;">⏰ Ready to Open!</span>` :
+                `<span style="color: #3498db;">🔒 Scheduled: ${letter.scheduledDate}</span>`;
+            
+            const actionButton = isReady ?
+                `<button style="margin-top: 5px; width: auto; background: #e74c3c;" onclick="openLetter(${letter.id})">Open Letter</button>` :
+                '';
+
+            return `
+                <div class="letter-card ${isReady ? 'ready' : ''}">
+                    <h4 style="margin: 0; font-size: 1.1em;">${letter.title}</h4>
+                    <p style="font-size: 0.8rem; color: #777;">Written: ${letter.writtenDate}</p>
+                    <p style="margin-top: 5px;">${statusText}</p>
+                    ${actionButton}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openLetter(letterId) {
+        const letter = futureLetters.find(l => l.id === letterId);
+
+        if (!letter || letter.status !== 'ready') {
+            alert("This letter isn't ready yet! Patience, grasshopper. 🕰️");
+            return;
+        }
+
+        const message = `
+            *** 💌 Letter from your Past Self ***
+            Title: ${letter.title}
+            Written On: ${letter.writtenDate}
+            Scheduled For: ${letter.scheduledDate}
+
+            ----------------------------------------
+            ${letter.content}
+            ----------------------------------------
+
+            How are you feeling now that you've read this? We hope it sparks some joy! ✨
+        `;
+
+        alert(message);
+
+        // Mark as read 
+        letter.status = 'read';
+        localStorage.setItem(LETTERS_KEY, JSON.stringify(futureLetters));
+        renderLetters();
+    }
+
+
+    // --- APP INITIALIZATION FUNCTION ---
+    function initApp() {
+        // Important: Check and potentially reset daily lock on every load if the day changed
+        challengeLockDate = localStorage.getItem(CHALLENGE_LOCK_KEY);
+        if (!isDailyLocked(challengeLockDate)) {
+             localStorage.removeItem(CHALLENGE_TODAY_KEY);
+        }
+
+        loadCustomization(); 
+        showScreen('home'); 
+        
+        const postTextarea = document.getElementById('postText');
+        if (postTextarea) {
+            postTextarea.addEventListener('input', checkSafety);
+        }
+    }
+
+    initApp();
+
+</script>
+
+</body>
+</html>
